@@ -3,11 +3,11 @@
             [clojure.set :as set]
             [camel-snake-kebab.extras :refer [transform-keys]]
             [camel-snake-kebab.core :as csk])
-  (:import '(com.google.protobuf Descriptors$FieldDescriptor$Type
+  (:import (com.google.protobuf Descriptors$FieldDescriptor$Type
                                  Message
                                  ProtocolMessageEnum)))
 
-(defn map-val
+(defn- map-val
   ([fn] (map (juxt key (comp fn val))))
   ([fn coll] (into {} (map-val fn) coll)))
 
@@ -49,8 +49,8 @@
         value (last full-name)
         ns- (str/join "." (butlast full-name))]
     (if namespaced?
-      (keyword ns- value)
-      (keyword value))))
+      (csk/->kebab-case-keyword (keyword ns- value))
+      (csk/->kebab-case-keyword value))))
 
 (defn proto->map
   "Returns a map representation of the proto message object."
@@ -72,9 +72,3 @@
                          (bean proto)
                          all-oneof-xforms)
                        fields))))
-
-
-(defmacro proto->clj
-  "Provides syntactic sugar to avoid runtime reflections if class is known."
-  [object clazz]
-  `(protobuf->map ~object (~(symbol (name clazz) "getDescriptor"))))
