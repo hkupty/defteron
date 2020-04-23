@@ -1,11 +1,13 @@
 (ns defteron.core
   (:require [clojure.string :as str]
             [clojure.set :as set]
+            [defteron.struct :as d.struct]
             [camel-snake-kebab.extras :refer [transform-keys]]
             [camel-snake-kebab.core :as csk])
   (:import (com.google.protobuf Descriptors$FieldDescriptor$Type
-                                 Message
-                                 ProtocolMessageEnum)))
+                                Message
+                                Struct
+                                ProtocolMessageEnum)))
 
 (defn- map-val
   ([fn] (map (juxt key (comp fn val))))
@@ -48,9 +50,11 @@
                              #"\.")
         value (last full-name)
         ns- (str/join "." (butlast full-name))]
-    (if namespaced?
-      (csk/->kebab-case-keyword (keyword ns- value))
-      (csk/->kebab-case-keyword value))))
+
+    (cond->> []
+      namespaced? (conj ns-)
+      true (conj (csk/->kebab-case-string value))
+      true (apply keyword))))
 
 (defn proto->map
   "Returns a map representation of the proto message object."
@@ -58,13 +62,13 @@
   (let [fields-descr (*proto-fields-descr proto)
         field-oneofs (.getOneofs fields-descr)
         all-oneof-xforms (map oneofs-xform field-oneofs)
-        fields (*proto->fields fields-descr)] 
+        fields (*proto->fields fields-descr)]
     (into {}
           (map-val (fn [val-]
-                     (let [supers- (supers (type val-))]
+                     (let [is-a? (fn [x] (some? ((supers (type val-)) x)))]
                        (cond
-                         (some? (supers- Enum)) (proto->keyword val-)
-                         (some? (supers- Message)) (proto->map val-)
+                         (is-a? Enum) (proto->keyword val-)
+                         (is-a? Message) (proto->map val-)
                          :else val-))))
           (select-keys (reduce
                          (fn [acc xform]
