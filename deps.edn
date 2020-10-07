@@ -1,4 +1,18 @@
 {:paths ["src" "resources"]
  :deps {org.clojure/clojure {:mvn/version "1.10.1"}
-        com.google.protobuf/protobuf-java {:mvn/version "3.11.4"}
-        camel-snake-kebab {:mvn/version "0.4.1"}}}
+        com.google.protobuf/protobuf-java {:mvn/version "3.13.0"}
+        camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.1"}}
+ :aliases
+ {;; Protobuf building from source
+  :sample {:extra-paths ["classes"]}
+  :test {:extra-paths ["test"]
+         :extra-deps {com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
+                                                 :sha "209b64504cb3bd3b99ecfec7937b358a879f55c1"}}
+         :main-opts ["-m" "cognitect.test-runner"]}
+  :protoc {:extra-paths ["proto"]
+           :extra-deps {defteron/defteron.builder {:git/url "https://github.com/hkupty/defteron.builder"
+                                                   :sha "6e5b753e935d0d73fa78d29f8b56ff4680709a02"}}
+           :main-opts ["-m" "defteron.builder"
+                       "-p" "proto"
+                       "-c" "classes"]}
+  :pack {:extra-deps {pack/pack.alpha {:git/url "https://github.com/juxt/pack.alpha.git" :sha "0e8731e0f24db05b74769e219051b0e92b50624a"}}}}}
