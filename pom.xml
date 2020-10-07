@@ -3,9 +3,9 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>defteron</groupId>
   <artifactId>defteron.core</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.2.0</version>
   <name>defteron.core</name>
-  <description>FIXME: my new library.</description>
+  <description>Protobuf to clojure transformations</description>
   <url>https://github.com/defteron/defteron.core</url>
   <licenses>
     <license>
@@ -30,6 +30,16 @@
       <artifactId>clojure</artifactId>
       <version>1.10.1</version>
     </dependency>
+    <dependency>
+      <groupId>com.google.protobuf</groupId>
+      <artifactId>protobuf-java</artifactId>
+      <version>3.13.0</version>
+    </dependency>
+    <dependency>
+      <groupId>camel-snake-kebab</groupId>
+      <artifactId>camel-snake-kebab</artifactId>
+      <version>0.4.1</version>
+    </dependency>
   </dependencies>
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -40,8 +50,8 @@
       <url>https://repo.clojars.org/</url>
     </repository>
     <repository>
-      <id>sonatype</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+      <id>jitpack</id>
+      <url>https://jitpack.io</url>
     </repository>
   </repositories>
   <distributionManagement>
