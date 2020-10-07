@@ -6,73 +6,66 @@
             [camel-snake-kebab.core :as csk])
   (:import (com.google.protobuf Descriptors$FieldDescriptor$Type
                                 Message
+                                MessageOrBuilder
+                                ProtocolMessageEnum
                                 Struct
                                 ProtocolMessageEnum)))
 
-(defn- map-val
-  ([fn] (map (juxt key (comp fn val))))
-  ([fn coll] (into {} (map-val fn) coll)))
+(def ^:dynamic *convert-key* csk/->kebab-case-keyword)
 
-(defn- *proto->fields
-  "Get fields from protobuf object's descriptor as clojure keywords"
-  [descr]
-  (map (fn [field]
-         (keyword (.getName field)))
-       (.getFields descr)))
-
-
-(defn- get-descriptor [proto method]
+(defn- proto-method [proto method]
   (.invoke
-    (.getMethod (.getClass proto)
+    (.getMethod proto
                 method
                 (into-array Class []))
     nil
     (into-array Object [])))
 
-(defn- *proto-fields-descr [proto] (get-descriptor proto "getDescriptor"))
+(defn- enum-from-class [klazz value]
+  (.invoke (.getMethod klazz "valueOf" (into-array Class [String]))
+           nil
+           (into-array String [value])))
 
-(defn- oneofs-xform [oneof-descriptor]
-  (let [oneof-field (csk/->camelCaseKeyword (str (.getName oneof-descriptor) "Case"))
-        possible-oneof-fields (into #{}
-                                    (map #(csk/->camelCaseKeyword (.getName %)))
-                                    (.getFields oneof-descriptor))]
-    (fn [proto-obj]
-      (->> (get proto-obj oneof-field)
-           (.toString)
-           (csk/->camelCaseKeyword)
-           (disj possible-oneof-fields)
-           (apply dissoc proto-obj)))))
+;; clj -> Proto
 
+(defn keyword->proto [proto-enum kw]
+  (cond
+    (isa? proto-enum ProtocolMessageEnum) (enum-from-class proto-enum (name kw))
+    :else (->> kw (name) (.findValueByName proto-enum))))
+
+(defn map->proto
+  "Get fields from protobuf object's descriptor as clojure keywords"
+  [proto-class data]
+  (let [builder (proto-method proto-class "newBuilder")]
+    (.build (reduce (fn [b field]
+                      (let [is-enum? (= Descriptors$FieldDescriptor$Type/ENUM (.getType field))
+                            value (cond->> (-> field (.getName) (*convert-key*) data)
+                                    is-enum? (keyword->proto (.getEnumType field)))]
+                        (cond-> b
+                          (some? value) (.setField field value))))
+                    builder
+                    (.getFields (proto-method proto-class "getDescriptor"))))))
+
+;; Proto -> clj
 (defn proto->keyword
   "Returns a keyword representation of the proto enum object"
-  [proto-enum & {:keys [namespaced?] :or {namespaced? true}}]
-  (let [full-name (str/split (.getFullName (.getValueDescriptor proto-enum))
+  [proto-enum]
+  (let [proto-enum (cond-> proto-enum
+                     (isa? (.getClass proto-enum) ProtocolMessageEnum) (.getValueDescriptor))
+        full-name (str/split (.getFullName proto-enum)
                              #"\.")
         value (last full-name)
         ns- (str/join "." (butlast full-name))]
-
-    (cond->> []
-      namespaced? (conj ns-)
-      true (conj (csk/->kebab-case-string value))
-      true (apply keyword))))
+    (keyword ns- value)))
 
 (defn proto->map
   "Returns a map representation of the proto message object."
   [proto]
-  (let [fields-descr (*proto-fields-descr proto)
-        field-oneofs (.getOneofs fields-descr)
-        all-oneof-xforms (map oneofs-xform field-oneofs)
-        fields (*proto->fields fields-descr)]
-    (into {}
-          (map-val (fn [val-]
-                     (let [is-a? (fn [x] (some? ((supers (type val-)) x)))]
-                       (cond
-                         (is-a? Enum) (proto->keyword val-)
-                         (is-a? Message) (proto->map val-)
-                         :else val-))))
-          (select-keys (reduce
-                         (fn [acc xform]
-                           (xform acc))
-                         (bean proto)
-                         all-oneof-xforms)
-                       fields))))
+  (reduce
+    (fn [obj [descr value]]
+      (type value)
+      (cond->> value
+        (= Descriptors$FieldDescriptor$Type/ENUM (.getType descr)) (proto->keyword)
+        true (assoc obj (*convert-key* (.getName descr)))))
+    {}
+    (.getAllFields proto)))
