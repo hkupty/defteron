@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+import "google/protobuf/struct.proto";
+package defteron;
+
+option java_package = "defteron";
+option java_outer_classname = "Proto";
+
+enum Size {
+  small = 0;
+  medium = 1;
+  large = 2;
+  xlarge = 3;
+}
+
+message Header {
+  string message_type = 1;
+  string address_from = 2;
+  string address_to = 3;
+  repeated string meta = 4;
+  oneof description {
+    int32 id = 5;
+    string data = 6;
+  }
+  Size msg_size = 7;
+}
+
+message Message {
+  Header header = 1;
+  google.protobuf.Struct data = 2;
+}
