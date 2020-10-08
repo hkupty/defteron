@@ -5,67 +5,71 @@
             [camel-snake-kebab.extras :refer [transform-keys]]
             [camel-snake-kebab.core :as csk])
   (:import (com.google.protobuf Descriptors$FieldDescriptor$Type
+                                Descriptors$EnumDescriptor
+                                Descriptors$EnumValueDescriptor
+                                Descriptors$Descriptor
+                                Descriptors$FieldDescriptor
                                 Message
+                                Message$Builder
                                 MessageOrBuilder
-                                ProtocolMessageEnum
                                 Struct
                                 ProtocolMessageEnum)))
 
 (def ^:dynamic *convert-key* csk/->kebab-case-keyword)
 
-(defn- proto-method [proto method]
-  (.invoke
-    (.getMethod proto
-                method
-                (into-array Class []))
-    nil
-    (into-array Object [])))
-
-(defn- enum-from-class [klazz value]
-  (.invoke (.getMethod klazz "valueOf" (into-array Class [String]))
-           nil
-           (into-array String [value])))
-
 ;; clj -> Proto
 
-(defn keyword->proto [proto-enum kw]
-  (cond
-    (isa? proto-enum ProtocolMessageEnum) (enum-from-class proto-enum (name kw))
-    :else (->> kw (name) (.findValueByName proto-enum))))
+(defmacro keyword->proto [proto-enum kw]
+  `(~(symbol (name proto-enum) "valueOf") ~(name kw)))
 
-(defn map->proto
+(defn- kw->proto [^Descriptors$EnumDescriptor proto-enum kw]
+  (.findValueByName proto-enum (name kw)))
+
+(defn *clj->proto [^Message$Builder builder
+                    ^Descriptors$Descriptor fields
+                    data]
+  (.build ^Message$Builder
+          (reduce (fn [^Message$Builder b [key- val-]]
+                    (let [field ^Descriptors$FieldDescriptor (.findFieldByName fields (csk/->snake_case_string key-))]
+                      (.setField b field
+                                 (cond->> val-
+                                   (= Descriptors$FieldDescriptor$Type/ENUM (.getType field))
+                                   (kw->proto (.getEnumType field))))))
+                  builder
+                  data)))
+
+(defmacro map->proto
   "Get fields from protobuf object's descriptor as clojure keywords"
   [proto-class data]
-  (let [builder (proto-method proto-class "newBuilder")]
-    (.build (reduce (fn [b field]
-                      (let [is-enum? (= Descriptors$FieldDescriptor$Type/ENUM (.getType field))
-                            value (cond->> (-> field (.getName) (*convert-key*) data)
-                                    is-enum? (keyword->proto (.getEnumType field)))]
-                        (cond-> b
-                          (some? value) (.setField field value))))
-                    builder
-                    (.getFields (proto-method proto-class "getDescriptor"))))))
+  (let [class-name (name proto-class)]
+    `(*clj->proto (~(symbol class-name "newBuilder"))
+                  (~(symbol class-name "getDescriptor"))
+                  ~data)))
 
 ;; Proto -> clj
-(defn proto->keyword
+(defn- proto->kw
   "Returns a keyword representation of the proto enum object"
-  [proto-enum]
-  (let [proto-enum (cond-> proto-enum
-                     (isa? (.getClass proto-enum) ProtocolMessageEnum) (.getValueDescriptor))
-        full-name (str/split (.getFullName proto-enum)
+  [^Descriptors$EnumValueDescriptor proto-enum]
+  (let [full-name (str/split (.getFullName proto-enum)
                              #"\.")
         value (last full-name)
         ns- (str/join "." (butlast full-name))]
     (keyword ns- value)))
 
+(defn proto->keyword
+  "Returns a keyword representation of the proto enum object"
+  [proto-enum]
+  (proto->kw (if (isa? (.getClass ^Object proto-enum) ProtocolMessageEnum) (.getValueDescriptor
+                                                                     ^ProtocolMessageEnum
+                                                                     proto-enum))))
+
 (defn proto->map
   "Returns a map representation of the proto message object."
-  [proto]
+  [^MessageOrBuilder proto]
   (reduce
-    (fn [obj [descr value]]
-      (type value)
+    (fn [obj [^Descriptors$FieldDescriptor descr value]]
       (cond->> value
-        (= Descriptors$FieldDescriptor$Type/ENUM (.getType descr)) (proto->keyword)
+        (= Descriptors$FieldDescriptor$Type/ENUM (.getType descr)) (proto->kw)
         true (assoc obj (*convert-key* (.getName descr)))))
     {}
     (.getAllFields proto)))
