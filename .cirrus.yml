@@ -1,10 +1,18 @@
 task:
+  name: Prepare
+  container:
+    image: clojure:latest
+  script: apt update && apt install protobuf-compiler --assume-yes && clojure -M:protoc
+  test_artifacts:
+    path: "classes/**/*.class"
+
+task:
   matrix:
-  - name: Unit Tests
-    container:
-      matrix:
-        image: clojure:openjdk-8-tools-deps
-        image: clojure:openjdk-11-tools-deps
-        image: clojure:openjdk-14-tools-deps
-        image: clojure:openjdk-16-tools-deps
-    test_script: clojure -M:sample:test
+    - name: Unit Tests
+      container:
+        matrix:
+          image: clojure:openjdk-8-tools-deps
+          image: clojure:openjdk-11-tools-deps
+          image: clojure:openjdk-14-tools-deps
+          image: clojure:openjdk-16-tools-deps
+      test_script: clojure -M:sample:test
