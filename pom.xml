@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>defteron</groupId>
   <artifactId>defteron.core</artifactId>
-  <version>0.3.3</version>
+  <version>0.3.4</version>
   <name>defteron.core</name>
   <description>Protobuf to clojure transformations</description>
   <url>https://github.com/defteron/defteron.core</url>
