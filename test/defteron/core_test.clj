@@ -13,10 +13,10 @@
                                 (.addAllMeta ["asdf" "qwer"])))]
 
     (testing "Enums can turn into namespaced keywords"
-      (is (= :defteron.Size/large (proto->keyword Proto$Size/large))))
+      (is (= :defteron.size/large (proto->keyword Proto$Size/large))))
 
     (testing "Messages can be turned into maps"
-      (is (= {:msg-size :defteron.Size/large
+      (is (= {:msg-size :defteron.size/large
               :data "Amazing"
               :meta ["asdf" "qwer"]}
              (proto->map sample-header))))))
@@ -28,13 +28,13 @@
                                 (.addAllMeta ["asdf" "qwer"])))]
 
     (testing "Keywords can be turned into enums"
-      (is (= (keyword->proto Proto$Size :defteron.Size/large)
+      (is (= (keyword->proto Proto$Size :defteron.size/large)
              Proto$Size/large)))
 
     (testing "Maps can be turned into messages"
       (is (= sample-header
              (map->proto  Proto$Header
-                         {:msg-size :defteron.Size/large
+                         {:msg-size :defteron.size/large
                           :data "Amazing"
                           :meta ["asdf" "qwer"]}))))))
 
@@ -43,7 +43,7 @@
                             (.setMsgSize Proto$Size/large)
                             (.setData "Amazing")
                             (.addAllMeta ["asdf" "qwer"])))
-        clj-msg {:msg-size :defteron.Size/large
+        clj-msg {:msg-size :defteron.size/large
                  :data "Amazing"
                  :meta ["asdf" "qwer"]}]
 

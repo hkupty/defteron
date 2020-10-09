@@ -6,10 +6,10 @@
 
 (defn serialize-enum-only []
   (.toByteArray (.build (doto (Proto$Header/newBuilder)
-                          (.setMsgSize (keyword->proto Proto$Size :defteron.Size/large))))))
+                          (.setMsgSize (keyword->proto Proto$Size :defteron.size/large))))))
 
 (defn serialize-msg []
-  (.toByteArray (map->proto Proto$Header {:msg-size :defteron.Size/large
+  (.toByteArray (map->proto Proto$Header {:msg-size :defteron.size/large
                                           :data "Some data"
                                           :meta ["a" "really" "short" "list"]})))
 
