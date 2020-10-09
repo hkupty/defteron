@@ -41,7 +41,7 @@
   ;; TODO Perform reflections on instantiation only
   (let [client (.invoke (.getMethod klazz "newBlockingStub" (into-array Class [Channel]))
                         nil
-                        (into-array Object [(channel)]))
+                        (into-array Object [channel]))
         service-name (.get (.getField klazz "SERVICE_NAME") klazz)]
     (fn [method data]
       (let [input (get-in @svc-catalog [service-name method :input])]
