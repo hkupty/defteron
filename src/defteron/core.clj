@@ -18,16 +18,15 @@
 (def ^:dynamic *convert-key* csk/->kebab-case-keyword)
 
 ;; clj -> Proto
+(defn- kw->proto [^Descriptors$EnumDescriptor proto-enum kw]
+  (.findValueByName proto-enum (name kw)))
 
 (defmacro keyword->proto [proto-enum kw]
   `(~(symbol (name proto-enum) "valueOf") ~(name kw)))
 
-(defn- kw->proto [^Descriptors$EnumDescriptor proto-enum kw]
-  (.findValueByName proto-enum (name kw)))
-
 (defn *clj->proto [^Message$Builder builder
-                    ^Descriptors$Descriptor fields
-                    data]
+                   ^Descriptors$Descriptor fields
+                   data]
   (.build ^Message$Builder
           (reduce (fn [^Message$Builder b [key- val-]]
                     (let [field ^Descriptors$FieldDescriptor (.findFieldByName fields (csk/->snake_case_string key-))]
@@ -59,9 +58,9 @@
 (defn proto->keyword
   "Returns a keyword representation of the proto enum object"
   [proto-enum]
-  (proto->kw (if (isa? (.getClass ^Object proto-enum) ProtocolMessageEnum) (.getValueDescriptor
-                                                                     ^ProtocolMessageEnum
-                                                                     proto-enum))))
+  (proto->kw (if (isa? (.getClass ^Object proto-enum) ProtocolMessageEnum)
+               (.getValueDescriptor
+                 ^ProtocolMessageEnum proto-enum))))
 
 (defn proto->map
   "Returns a map representation of the proto message object."
