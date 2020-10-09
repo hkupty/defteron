@@ -67,8 +67,9 @@
   [^MessageOrBuilder proto]
   (reduce
     (fn [obj [^Descriptors$FieldDescriptor descr value]]
-      (cond->> value
-        (= Descriptors$FieldDescriptor$Type/ENUM (.getType descr)) (proto->kw)
-        true (assoc obj (*convert-key* (.getName descr)))))
+      (cond-> obj
+        (some? value) (assoc (*convert-key* (.getName descr))
+                             (cond->> value
+                               (= Descriptors$FieldDescriptor$Type/ENUM (.getType descr)) (proto->kw)))))
     {}
     (.getAllFields proto)))
