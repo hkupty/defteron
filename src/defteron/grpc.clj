@@ -33,12 +33,12 @@
 (defn- map->proto
   "Reflective version of map->proto"
   [proto-class data]
-  (d/*clj->proto (.invoke (.getMethod proto-class "newBuilder" (into-array Object []))
+  (d/*clj->proto (.invoke (.getMethod proto-class "newBuilder" (into-array Class []))
                           nil
-                          (into-array Class []))
-                  (.invoke (.getMethod proto-class "getDescriptor" (into-array Object []))
+                          (into-array Object []))
+                  (.invoke (.getMethod proto-class "getDescriptor" (into-array Class []))
                           nil
-                          (into-array Class []) )
+                          (into-array Object []) )
                   ~data))
 
 (defn new-client [klazz channel]
