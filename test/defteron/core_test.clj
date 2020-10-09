@@ -3,6 +3,9 @@
             [defteron.core :refer :all])
   (:import (defteron Proto$Header Proto$Size)))
 
+(set! *warn-on-reflection* true)
+
+
 (deftest protobuf->clojure
   (let [sample-header (.build (doto (Proto$Header/newBuilder)
                                 (.setMsgSize Proto$Size/large)

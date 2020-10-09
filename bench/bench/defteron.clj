@@ -1,5 +1,7 @@
 (ns bench.defteron
-  (:require [defteron.core :refer [map->proto keyword->proto]])
+  (:require [defteron.core :refer [proto->map
+                                   map->proto
+                                   keyword->proto]])
   (:import (defteron Proto$Header Proto$Size)))
 
 (defn serialize-enum-only []
@@ -9,4 +11,7 @@
 (defn serialize-msg []
   (.toByteArray (map->proto Proto$Header {:msg-size :defteron.Size/large
                                           :data "Some data"
-                                          :meta ["a" "really" "short" "list"]})) )
+                                          :meta ["a" "really" "short" "list"]})))
+
+(defn deserialize-msg [msg]
+  (proto->map msg))

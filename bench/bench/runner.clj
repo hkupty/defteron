@@ -2,8 +2,13 @@
   (:require [criterium.core :as crit]
             [bench.defteron :as lib]
             [bench.native :as native])
+  (:import (defteron Proto$Header Proto$Size))
   (:gen-class))
 
+(def base (.build (doto (Proto$Header/newBuilder)
+                    (.setMsgSize Proto$Size/large)
+                    (.setData "Some data")
+                    (.addAllMeta ["a" "really" "short" "list"]))))
 
 (defn -main []
   (set! *warn-on-reflection* true)
@@ -13,4 +18,8 @@
 
   (println ::enum)
   (crit/report-result (crit/quick-benchmark (lib/serialize-enum-only) {}))
-  (crit/report-result (crit/quick-benchmark (native/serialize-enum-only) {})))
+  (crit/report-result (crit/quick-benchmark (native/serialize-enum-only) {}))
+
+  (println ::msg)
+  (crit/report-result (crit/quick-benchmark (lib/deserialize-msg base) {}))
+  (crit/report-result (crit/quick-benchmark (native/deserialize-msg base) {})))

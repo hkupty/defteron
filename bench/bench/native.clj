@@ -9,3 +9,11 @@
                           (.setMsgSize Proto$Size/large)
                           (.setData "Some data")
                           (.addAllMeta ["a" "really" "short" "list"])))))
+
+(defn deserialize-msg [msg]
+  ;; Not necessarily a fair comparison,
+  ;; since bean will produce a different result,
+  ;; but I could see bean being used in production
+  ;; so it should be "ok" to check against something
+  ;; being used the same way, while not producing the same result.
+  (bean msg))
