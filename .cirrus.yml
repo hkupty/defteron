@@ -1,0 +1,9 @@
+matrix:
+- name: Unit Tests
+  container:
+    matrix:
+      image: clojure:openjdk-8-tools-deps
+      image: clojure:openjdk-11-tools-deps
+      image: clojure:openjdk-14-tools-deps
+      image: clojure:openjdk-16-tools-deps
+  test_script: clojure -M:sample:test
