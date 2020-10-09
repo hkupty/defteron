@@ -40,7 +40,9 @@
 (defmacro map->proto
   "Get fields from protobuf object's descriptor as clojure keywords"
   [proto-class data]
-  (let [class-name (name proto-class)]
+  (let [proto-class (cond-> proto-class
+                      (coll? proto-class) (eval))
+        class-name (name proto-class)]
     `(*clj->proto (~(symbol class-name "newBuilder"))
                   (~(symbol class-name "getDescriptor"))
                   ~data)))

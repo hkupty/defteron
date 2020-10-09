@@ -42,4 +42,6 @@
                                            (csk/->camelCaseString method)
                                            (into-array Class [input]))
                                client
-                               (into-array Object [(d/map->proto input data)])))))))
+                               (into-array Object [(d/map->proto
+                                                     (get-in @svc-catalog [service-name method :input])
+                                                     data)])))))))
