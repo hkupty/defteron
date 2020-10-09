@@ -39,7 +39,7 @@
                   (.invoke (.getMethod proto-class "getDescriptor" (into-array Class []))
                           nil
                           (into-array Object []) )
-                  ~data))
+                  data))
 
 (defn new-client [klazz channel]
   ;; TODO Perform reflections on instantiation only
