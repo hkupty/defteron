@@ -52,7 +52,7 @@
   (let [full-name (str/split (.getFullName proto-enum)
                              #"\.")
         value (last full-name)
-        ns- (str/join "." (butlast full-name))]
+        ns- (str/lower-case (str/join "." (butlast full-name)))]
     (keyword ns- value)))
 
 (defn proto->keyword
