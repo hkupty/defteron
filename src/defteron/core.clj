@@ -62,14 +62,22 @@
                (.getValueDescriptor
                  ^ProtocolMessageEnum proto-enum))))
 
+(declare proto->map)
+
+(defn- match-xformer [^Descriptors$FieldDescriptor descr value]
+  (let [descr-type (.getType descr)]
+    (cond
+      (= Descriptors$FieldDescriptor$Type/MESSAGE descr-type) proto->map
+      (= Descriptors$FieldDescriptor$Type/ENUM descr-type) proto->kw
+      :else identity)))
+
+
 (defn proto->map
   "Returns a map representation of the proto message object."
   [^MessageOrBuilder proto]
   (reduce
     (fn [obj [^Descriptors$FieldDescriptor descr value]]
       (cond-> obj
-        (some? value) (assoc (*convert-key* (.getName descr))
-                             (cond->> value
-                               (= Descriptors$FieldDescriptor$Type/ENUM (.getType descr)) (proto->kw)))))
+          (some? value) (assoc (*convert-key* (.getName descr)) ((match-xformer descr value) value))))
     {}
     (.getAllFields proto)))
