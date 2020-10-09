@@ -30,6 +30,13 @@
         svc-descr (.getServiceDescriptor bind)]
     (swap! svc-catalog assoc (.getName svc-descr) (introspect-svc grpc-package bind))))
 
+(defn- map->proto
+  "Reflective version of map->proto"
+  [proto-class data]
+  (d/*clj->proto (.invoke (.getMethod proto-class "newBuilder" nil (into-array Object [])))
+                  (.invoke (.getMethod proto-class "getDescriptor" nil (into-array Object [])))
+                  ~data))
+
 (defn new-client [klazz channel]
   ;; TODO Perform reflections on instantiation only
   (let [client (.invoke (.getMethod klazz "newBlockingStub" (into-array Class [Channel]))
@@ -42,6 +49,4 @@
                                            (csk/->camelCaseString method)
                                            (into-array Class [input]))
                                client
-                               (into-array Object [(d/map->proto
-                                                     (get-in @svc-catalog [service-name method :input])
-                                                     data)])))))))
+                               (into-array Object [(map->proto input data)])))))))
