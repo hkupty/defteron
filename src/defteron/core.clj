@@ -67,6 +67,7 @@
 (defn- match-xformer [^Descriptors$FieldDescriptor descr value]
   (let [descr-type (.getType descr)]
     (cond
+      (instance? Struct value) d.struct/Struct->
       (= Descriptors$FieldDescriptor$Type/MESSAGE descr-type) proto->map
       (= Descriptors$FieldDescriptor$Type/ENUM descr-type) proto->kw
       :else identity)))
