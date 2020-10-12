@@ -34,8 +34,8 @@
 (defn- craft-static-method! [^Descriptors$Descriptor message
                              method-name]
   (let [file (.getFile message)
-        package (.getPackage file)
         file-options (.getOptions file)
+        package (.getJavaPackage file-options)
         class-name (str
                      (if (not (.getJavaMultipleFiles file-options))
                        (some->
