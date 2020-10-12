@@ -9,13 +9,20 @@
                                 Descriptors$EnumValueDescriptor
                                 Descriptors$Descriptor
                                 Descriptors$FieldDescriptor
+                                Descriptors$FileDescriptor
                                 Message
                                 Message$Builder
                                 MessageOrBuilder
                                 Struct
                                 ProtocolMessageEnum)))
 
+(set! *warn-on-reflection* true)
+
 (def ^:dynamic *convert-key* csk/->kebab-case-keyword)
+
+(defn import-by-name [proto-class]
+  (.importClass (the-ns *ns*)
+                (clojure.lang.RT/classForName proto-class)))
 
 ;; clj -> Proto
 (defn- kw->proto [^Descriptors$EnumDescriptor proto-enum kw]
@@ -23,6 +30,34 @@
 
 (defmacro keyword->proto [proto-enum kw]
   `(~(symbol (name proto-enum) "valueOf") ~(name kw)))
+
+(defn- craft-static-method! [^Descriptors$Descriptor message
+                             method-name]
+  (let [file (.getFile message)
+        package (.getPackage file)
+        class-name (str
+                     (some-> (.getJavaOuterClassname (.getOptions file))
+                             (str "$"))
+                     (.getName message))]
+
+    (import-by-name (str package "." class-name))
+
+    (symbol
+      class-name
+      method-name)))
+
+(declare *clj->proto)
+
+(defn field->message [field value]
+  (let [msg-descr ^Descriptors$Descriptor (.getMessageType ^Descriptors$FieldDescriptor field)
+        msg-type-name (.getFullName msg-descr)]
+
+    (if (= "google.protobuf.Struct" msg-type-name)
+      (d.struct/->Struct value)
+      (*clj->proto (eval (list (craft-static-method! msg-descr "newBuilder")))
+                   msg-descr
+                   value))))
+
 
 (defn *clj->proto [^Message$Builder builder
                    ^Descriptors$Descriptor fields
@@ -32,6 +67,11 @@
                     (let [field ^Descriptors$FieldDescriptor (.findFieldByName fields (csk/->snake_case_string key-))]
                       (.setField b field
                                  (cond->> val-
+                                   ;; Message
+                                   (= Descriptors$FieldDescriptor$Type/MESSAGE (.getType field))
+                                   (field->message field)
+
+                                   ;; Enum
                                    (= Descriptors$FieldDescriptor$Type/ENUM (.getType field))
                                    (kw->proto (.getEnumType field))))))
                   builder
