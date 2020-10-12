@@ -27,8 +27,14 @@
 (defn- convert-number [x]
   (-> (Value/newBuilder)
       (.setNumberValue x)
-      (.build)) )
+      (.build)))
 
+(defn- convert-string [x]
+  (-> (Value/newBuilder)
+      (.setStringValue x)
+      (.build)))
+
+(defmethod ->Value clojure.lang.Keyword [x] (convert-string (name x)))
 (defmethod ->Value java.lang.Double [x] (convert-number x))
 (defmethod ->Value java.lang.Long [x] (convert-number x))
 (defmethod ->Value clojure.lang.BigInt [x] (convert-number x))
