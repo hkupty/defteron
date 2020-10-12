@@ -7,9 +7,8 @@ task:
           image: clojure:openjdk-11-tools-deps
           image: clojure:openjdk-14-tools-deps
           image: clojure:openjdk-16-tools-deps
-      protoc_compile_cache:
-        folder: "classes"
-        fingerprint_script:
-          - sha256sum proto/*
-        populate_script: apt update && apt install protobuf-compiler --assume-yes && clojure -M:protoc
+      populate_script:
+        - apt update
+        - apt install protobuf-compiler --assume-yes
+        - clojure -M:protoc
       test_script: clojure -M:sample:test
