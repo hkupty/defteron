@@ -35,9 +35,12 @@
                              method-name]
   (let [file (.getFile message)
         package (.getPackage file)
+        file-options (.getOptions file)
         class-name (str
-                     (some-> (.getJavaOuterClassname (.getOptions file))
-                             (str "$"))
+                     (if (not (.getJavaMultipleFiles file-options))
+                       (some->
+                         (.getJavaOuterClassname file-options)
+                         (str "$")))
                      (.getName message))]
 
     (import-by-name (str package "." class-name))
