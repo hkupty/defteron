@@ -68,21 +68,29 @@
            (proto->map sample-message)))))
 
 (deftest clojure->protobuf
-  (let [sample-header (.build (doto (Proto$Header/newBuilder)
-                                (.setMsgSize Proto$Size/large)
-                                (.setData "Amazing")
-                                (.addAllMeta ["asdf" "qwer"])))]
+  (testing "Keywords can be turned into enums"
+    (is (= (keyword->proto Proto$Size :defteron.size/large)
+           Proto$Size/large)))
 
-    (testing "Keywords can be turned into enums"
-      (is (= (keyword->proto Proto$Size :defteron.size/large)
-             Proto$Size/large)))
+  (testing "Maps can be turned into messages"
+    (is (= sample-header
+           (map->proto  Proto$Header
+                       {:msg-size :defteron.size/large
+                        :data "Amazing"
+                        :meta ["asdf" "qwer"]}))))
 
-    (testing "Maps can be turned into messages"
-      (is (= sample-header
-             (map->proto  Proto$Header
-                         {:msg-size :defteron.size/large
-                          :data "Amazing"
-                          :meta ["asdf" "qwer"]}))))))
+  (testing "Maps can be turned into structs"
+    (is (= sample-message
+           (map->proto Proto$Message
+                       {:header {:msg-size :defteron.size/large
+                                 :data "Amazing"
+                                 :meta ["asdf" "qwer"]}
+                        :data {:some ["Arbitrary"
+                                      'data
+                                      :structure]
+                               :with {:nested-data 100
+                                      :opinionated-serializers true
+                                      :all-types nil}} })))))
 
 (deftest roudtrip
   (let [proto-msg (.build (doto (Proto$Header/newBuilder)
