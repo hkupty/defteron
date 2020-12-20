@@ -94,10 +94,10 @@
 (defn- proto->kw
   "Returns a keyword representation of the proto enum object"
   [^Descriptors$EnumValueDescriptor proto-enum]
-  (let [full-name (str/split (.getFullName proto-enum)
-                             #"\.")
-        value (last full-name)
-        ns- (str/lower-case (str/join "." (butlast full-name)))]
+  (let [full-name ^String (.getFullName proto-enum)
+        splitting-point (.lastIndexOf full-name 46) ;; (int \.) => 46
+        ns- (str/lower-case (.substring full-name splitting-point))
+        value (.substring full-name splitting-point)]
     (keyword ns- value)))
 
 (defn proto->keyword
