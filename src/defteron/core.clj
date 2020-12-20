@@ -64,7 +64,7 @@
                    value))))
 
 
-(defn *clj->proto [^Message$Builder builder
+(defn *clj->proto ^Message [^Message$Builder builder
                    ^Descriptors$Descriptor fields
                    data]
   (.build ^Message$Builder
