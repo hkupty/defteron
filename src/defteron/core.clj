@@ -121,9 +121,9 @@
 (defn proto->map
   "Returns a map representation of the proto message object."
   [^MessageOrBuilder proto]
-  (reduce
+  (persistent! (reduce
     (fn [obj [^Descriptors$FieldDescriptor descr value]]
       (cond-> obj
-          (some? value) (assoc (*convert-key* (.getName descr)) ((match-xformer descr value) value))))
-    {}
-    (.getAllFields proto)))
+          (some? value) (assoc! (*convert-key* (.getName descr)) ((match-xformer descr value) value))))
+    (transient {})
+    (.getAllFields proto))))
