@@ -2,6 +2,7 @@
   (:require [clojure.string :as str]
             [clojure.set :as set]
             [defteron.struct :as d.struct]
+            [defteron.tools :as d.tools]
             [camel-snake-kebab.extras :refer [transform-keys]]
             [camel-snake-kebab.core :as csk])
   (:import (com.google.protobuf Descriptors$FieldDescriptor$Type
@@ -18,13 +19,14 @@
 
 (set! *warn-on-reflection* true)
 
-(def ^:dynamic *convert-key* csk/->kebab-case-keyword)
+(def ^:dynamic *convert-key* d.tools/name-proto->clj)
 
 (defn import-by-name [proto-class]
   (.importClass (the-ns *ns*)
                 (clojure.lang.RT/classForName proto-class)))
 
 ;; clj -> Proto
+
 (defn- kw->proto [^Descriptors$EnumDescriptor proto-enum kw]
   (.findValueByName proto-enum (name kw)))
 
@@ -67,7 +69,7 @@
                    data]
   (.build ^Message$Builder
           (reduce (fn [^Message$Builder b [key- val-]]
-                    (let [field ^Descriptors$FieldDescriptor (.findFieldByName fields (csk/->snake_case_string key-))]
+                    (let [field ^Descriptors$FieldDescriptor (.findFieldByName fields (d.tools/name-clj->proto key-))]
                       (.setField b field
                                  (cond->> val-
                                    ;; Message
