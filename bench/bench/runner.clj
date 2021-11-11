@@ -11,6 +11,10 @@
                     (.addAllMeta ["a" "really" "short" "list"]))))
 
 (defn -main []
+  (println ::sleep-10)
+  (Thread/sleep 10000)
+  (println ::sleep-20)
+  (Thread/sleep 10000)
   (set! *warn-on-reflection* true)
   (println ::msg)
   (crit/report-result (crit/quick-benchmark (lib/serialize-msg) {}))

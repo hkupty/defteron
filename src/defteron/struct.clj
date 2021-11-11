@@ -1,13 +1,13 @@
 (ns defteron.struct
-  (:require [camel-snake-kebab.core :as csk])
+  (:require [defteron.tools :as d.tools])
   (:import (com.google.protobuf Value
                                 Value$KindCase
                                 NullValue
                                 ListValue
                                 Struct)))
 
-(def ^:dynamic to-struct-key-fn csk/->snake_case_string)
-(def ^:dynamic from-struct-key-fn csk/->kebab-case-keyword)
+(def ^:dynamic to-struct-key-fn d.tools/name-proto->clj)
+(def ^:dynamic from-struct-key-fn d.tools/name-clj->proto)
 
 ;; Reading Structs and Values
 

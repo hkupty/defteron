@@ -1,0 +1,8 @@
+#!/bin/env bash
+
+# TODO: Migrate to clojure
+commits=$(git log $(git describe --abbrev=0 --tags)..HEAD --pretty=format:'%s')
+fix=$(echo "$commits" | grep -c "^fix")
+feature=$(echo "$commits" | grep -c "^feature")
+breaking=$(echo "$breaking" | grep -c "^feature")
+

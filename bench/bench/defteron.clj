@@ -9,7 +9,7 @@
                           (.setMsgSize (keyword->proto Proto$Size :defteron.size/large))))))
 
 (defn serialize-msg []
-  (.toByteArray (map->proto Proto$Header {:msg-size :defteron.size/large
+  (.toByteArray (map->proto Proto$Header {:msg_size :defteron.size/large
                                           :data "Some data"
                                           :meta ["a" "really" "short" "list"]})))
 

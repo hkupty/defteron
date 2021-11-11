@@ -3,8 +3,7 @@
             [clojure.set :as set]
             [defteron.struct :as d.struct]
             [defteron.tools :as d.tools]
-            [camel-snake-kebab.extras :refer [transform-keys]]
-            [camel-snake-kebab.core :as csk])
+            [camel-snake-kebab.extras :refer [transform-keys]])
   (:import (com.google.protobuf Descriptors$FieldDescriptor$Type
                                 Descriptors$EnumDescriptor
                                 Descriptors$EnumValueDescriptor
@@ -81,6 +80,7 @@
                                    (kw->proto (.getEnumType field))))))
                   builder
                   data)))
+
 
 (defmacro map->proto
   "Get fields from protobuf object's descriptor as clojure keywords"

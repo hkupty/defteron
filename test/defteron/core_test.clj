@@ -72,6 +72,8 @@
     (is (= (keyword->proto Proto$Size :defteron.size/large)
            Proto$Size/large)))
 
+(.getValueDescriptor ^ProtocolMessageEnum Proto$Size/large)
+
   (testing "Maps can be turned into messages"
     (is (= sample-header
            (map->proto  Proto$Header
